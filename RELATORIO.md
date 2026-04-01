@@ -6,8 +6,8 @@
 
 ## Dados do aluno
 
-- **Cartão UFRGS**: <mark>`<preencher>`</mark>
-- **Nome**: <mark>`<preencher>`</mark>
+- **Cartão UFRGS**: 00263870
+- **Nome**: Stefany Nascimento
 
 ## Passos que eu segui para resolver o problema especificado (em formato de *"prompt"*)
 
