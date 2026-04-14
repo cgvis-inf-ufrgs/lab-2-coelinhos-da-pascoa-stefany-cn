@@ -400,17 +400,76 @@ int main(int argc, char* argv[])
         #define BUNNY  1
         #define PLANE  2
 
-        // Desenhamos o modelo da esfera
-        model = Matrix_Translate(-1.0f,0.0f,0.0f);
-        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-        glUniform1i(g_object_id_uniform, SPHERE);
-        DrawVirtualObject("the_sphere");
+        float tempo = (float) glfwGetTime();
 
-        // Desenhamos o modelo do coelho
-        model = Matrix_Translate(1.0f,0.0f,0.0f);
-        glUniformMatrix4fv(g_model_uniform, 1 , GL_FALSE , glm::value_ptr(model));
-        glUniform1i(g_object_id_uniform, BUNNY);
-        DrawVirtualObject("the_bunny");
+        //---- Parametros coelho ----
+        const int num_coelhos = 16;
+        float raio = 2.8f;
+        float altura_base = -0.65f;
+        float altura_maxima = 2.0f;
+        float frequencia = 4.0f;
+        float velocidade_vertical = 4.0f;
+        float velocidade_circular = 0.5f;
+
+        //---- Parametros ovos ----
+        float raio_orbita = 0.45f;
+        float velocidade_orbita_ovos = 2.0f;
+        float angulo_orbita = velocidade_orbita_ovos * tempo;
+
+        for (int i = 0; i < num_coelhos; ++i)
+        {
+            // posição angular da fatia + movimento ao longo do tempo
+            float angulo = i * (2.0f * M_PI / num_coelhos) - velocidade_circular * tempo;
+
+            // translação circular
+            float pos_x = raio * cos(angulo);
+            float pos_z = raio * sin(angulo); 
+
+            // movimento vertical senoidal
+            float deslocamento_y = altura_maxima * (0.5f + 0.5f * sin(velocidade_vertical * tempo + frequencia * angulo));
+            float pos_y = altura_base + deslocamento_y;
+
+            // rotação do coelho
+            float angulo_rotacao = -angulo - M_PI/2.0f; 
+
+            glm::mat4 model_base = Matrix_Translate(pos_x, pos_y, pos_z)
+                                   * Matrix_Rotate_Y(angulo_rotacao);
+
+            if (i % 4 == 0){
+                model_base = model_base 
+                            * Matrix_Rotate_Z(velocidade_vertical* tempo + frequencia * angulo + M_PI/3.0f);
+            }
+
+            // ========= COELHO =========
+            model = model_base
+                    * Matrix_Scale(0.35f, 0.35f, 0.35f);
+
+            glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+            glUniform1i(g_object_id_uniform, BUNNY);
+            DrawVirtualObject("the_bunny");
+
+            // ========= OVO 1 =========
+            model = model_base
+                    * Matrix_Rotate_X(angulo_orbita)
+                    * Matrix_Translate(0.0f, 0.0f, raio_orbita)
+                    * Matrix_Rotate_X(-angulo_orbita)
+                    * Matrix_Scale(0.08f, 0.12f, 0.08f);
+
+            glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+            glUniform1i(g_object_id_uniform, SPHERE);
+            DrawVirtualObject("the_sphere");
+
+            // ========= OVO 2 =========
+            model = model_base
+                    * Matrix_Rotate_X(angulo_orbita + M_PI)
+                    * Matrix_Translate(0.0f, 0.0f, raio_orbita)
+                    * Matrix_Rotate_X(-(angulo_orbita + M_PI))
+                    * Matrix_Scale(0.08f, 0.12f, 0.08f);
+
+            glUniformMatrix4fv(g_model_uniform, 1, GL_FALSE, glm::value_ptr(model));
+            glUniform1i(g_object_id_uniform, SPHERE);
+            DrawVirtualObject("the_sphere");
+        }
 
         // Desenhamos o plano do chão
         model = Matrix_Translate(0.0f,-1.0f,0.0f) * Matrix_Scale(4.0f,1.0f,4.0f);
